@@ -10,6 +10,9 @@ sudo apt install -y ffmpeg build-essential
 sudo apt install -y apache2 python3-certbot-apache
 
 # configure apache2
+sudo mkdir -p /var/www/icpc-a.nomiss.net
+sudo chown -R www-data:www-data /var/www/icpc-a.nomiss.net
+sudo a2enmod proxy
 sudo cp apache/010_apache.conf /etc/apache2/sites-available/010_icpc_a.conf
 sudo a2ensite 010_icpc_a.conf
 
