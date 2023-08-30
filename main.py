@@ -2,15 +2,21 @@ from datetime import datetime
 import os
 import google_streetview.api
 
-API_KEY = ''
+from os.path import join
+from dotenv import load_dotenv
+
+load_dotenv(verbose=True)
+
+API_KEY = os.environ.get("API_KEY")
 download_dir = 'downloads'
 
-def download_image(lon, lat, heading, save_filename='gsv_0.jpg'):
-    # create dir named datetime.now()
-    requested_at = datetime.now().strftime('%Y-%m-%d.%H-%M-%S-%f')
+
+# download a image
+
+def download_image(lon, lat, heading, save_dirname, save_filename):
 
     # decide filename
-    file_dir = '{}/{}'.format(download_dir, requested_at)
+    file_dir = '{}/{}'.format(download_dir, save_dirname)
 
     # Define parameters for street view api
     params = [{
@@ -18,7 +24,8 @@ def download_image(lon, lat, heading, save_filename='gsv_0.jpg'):
         # 'location': "46.414382,10.013988",
         'location': "{},{}".format(lon, lat),
         'heading': heading,
-        'pitch': '-0.76',
+        # 'pitch': '-0.76',
+        'radius': '10000',
         'fov': '120',
         'key': API_KEY
     }]
@@ -28,15 +35,32 @@ def download_image(lon, lat, heading, save_filename='gsv_0.jpg'):
 
 
     # Download images to directory 'downloads'
-    print('downloading image into `{}`'.format(file_dir))
+    print('downloading image into `{}`'.format(join(file_dir, save_filename)))
     results.download_links(file_dir)
 
-    return "{}/{}".format(file_dir, 'gsv_0.jpg')
+    # rename filename
+    os.rename(join(file_dir, 'gsv_0.jpg'), join(file_dir, save_filename))
+
+    return join(file_dir, save_filename)
+
+def download_image_120x3(lon, lat, save_dirname, filename_prefix="gsv"):
+    image_pathes = []
+    for i, heading in enumerate([0, 120, 240]):
+        image_path = "{}_{}.jpg".format(filename_prefix, i)
+        image_pathes.append(image_path)
+        download_image(lon, lat, heading, save_dirname, image_path)
+
+    return image_pathes
 
 if(__name__ == "__main__"):
     # location = '46.414382,10.013988'
     # location = '36.32252348212603,139.0112780592011' # jp
-    location = '13.7037585,100.4664948' # thai
-#     location = '46.414382,135.013988'
+    # location = '13.7037585,100.4664948' # thai
+    location = '43.079734,141.525624'
     lon, lat = location.split(',')
-    [download_image(lon, lat, heading) for heading in [0, 120, 240]]
+
+    # create dir named datetime.now()
+    requested_at = datetime.now().strftime('%Y-%m-%d.%H-%M-%S-%f')
+
+    # create 
+    download_image_120x3(lon, lat, requested_at, "image")
