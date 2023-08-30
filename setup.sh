@@ -23,6 +23,7 @@ sudo systemctl enable fastapi.service
 sudo systemctl start fastapi.service
 
 # install python packages
+cd FastAPI
 python3 -m venv venv
 
 . venv/bin/activate
