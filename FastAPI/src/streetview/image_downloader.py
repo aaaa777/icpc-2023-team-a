@@ -9,7 +9,7 @@ load_dotenv(verbose=True)
 
 API_KEY = os.environ.get("API_KEY")
 download_dir = 'downloads'
-
+print(API_KEY)
 
 # download a image
 
@@ -52,15 +52,14 @@ def download_image_120x3(lon, lat, save_dirname, filename_prefix="gsv"):
 
     return image_pathes
 
-if(__name__ == "__main__"):
+def get_images(location: str):
     # location = '46.414382,10.013988'
     # location = '36.32252348212603,139.0112780592011' # jp
     # location = '13.7037585,100.4664948' # thai
-    location = '43.079734,141.525624'
     lon, lat = location.split(',')
 
     # create dir named datetime.now()
     requested_at = datetime.now().strftime('%Y-%m-%d.%H-%M-%S-%f')
 
     # create 
-    download_image_120x3(lon, lat, requested_at, "image")
+    return download_image_120x3(lon, lat, requested_at, "image")
