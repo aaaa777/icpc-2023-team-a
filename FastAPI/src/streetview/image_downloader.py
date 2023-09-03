@@ -45,7 +45,8 @@ def download_image(lon, lat, heading, save_dirname, save_filename):
 
     return join(file_dir, save_filename)
 
-def download_image_120x3(lon, lat, save_dirname, filename_prefix="gsv"):
+# do not set filename_prefix 'gsv'
+def download_image_120x3(lon, lat, save_dirname, filename_prefix="image"):
     image_paths = []
     for i, heading in enumerate([0, 120, 240]):
         image_path = "{}_{}.jpg".format(filename_prefix, i)
@@ -54,13 +55,13 @@ def download_image_120x3(lon, lat, save_dirname, filename_prefix="gsv"):
     return image_paths
 
 # concat images
-def concat_images(image_pathes):
+def concat_images(image_paths):
     images = [cv2.imread(path) for path in image_paths]
     output_image = np.concatenate(images, axis=1)
     return output_image
 
 def get_images(lon: float, lat: float):
-    # ?lat=36.32252348212603&lon=139.0112780592011 # jp
+    # ?lat=36.32252348212603&lon=139.0112780592011 # jp 
     # ?lat=13.7037585&lon=100.4664948 # thai
 
     # create dir named datetime.now()
