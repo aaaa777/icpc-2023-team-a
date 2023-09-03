@@ -24,7 +24,7 @@ def download_image(lon, lat, heading, save_dirname, save_filename):
     params = [{
         'size': '640x640', # max 640x640 pixels
         # 'location': "46.414382,10.013988",
-        'location': "{},{}".format(lon, lat),
+        'location': "{},{}".format(lat, lon),
         'heading': heading,
         # 'pitch': '-0.76',
         'radius': '10000',
