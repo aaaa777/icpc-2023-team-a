@@ -1,0 +1,13 @@
+[Unit]
+Description = FastAPI service ( gunicorn - fastapi )
+After = network-online.target
+
+[Service]
+WorkingDirectory = /var/www/icpc-a.nomiss.net/FastAPI
+ExecStart = /var/ww/icpc-a.nomiss.net/FastAPI/venv/bin/uvicorn src.main:app
+ExecReload = /bin/kill -s HUP $MAINPID
+ExecStop = /bin/kill -s TERM $MAINPID
+PrivateTmp = true
+
+[Install]
+WantedBy = multi-user.target
