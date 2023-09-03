@@ -1,4 +1,5 @@
 .env
 venv
+downloads
 __pycache__
 dnn_model
