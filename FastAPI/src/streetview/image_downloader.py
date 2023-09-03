@@ -1,6 +1,8 @@
 from datetime import datetime
 import os
 import google_streetview.api
+import cv2
+import numpy as np
 
 from os.path import join
 from dotenv import load_dotenv
@@ -44,13 +46,12 @@ def download_image(lon, lat, heading, save_dirname, save_filename):
     return join(file_dir, save_filename)
 
 def download_image_120x3(lon, lat, save_dirname, filename_prefix="gsv"):
-    image_pathes = []
+    image_paths = []
     for i, heading in enumerate([0, 120, 240]):
         image_path = "{}_{}.jpg".format(filename_prefix, i)
-        image_pathes.append(image_path)
-        download_image(lon, lat, heading, save_dirname, image_path)
+        image_paths.append(download_image(lon, lat, heading, save_dirname, image_path))
 
-    return image_pathes
+    return image_paths
 
 def get_images(lon: float, lat: float):
     # ?lon=36.32252348212603&lat=139.0112780592011 # jp
@@ -59,5 +60,11 @@ def get_images(lon: float, lat: float):
     # create dir named datetime.now()
     requested_at = datetime.now().strftime('%Y-%m-%d.%H-%M-%S-%f')
 
+    splitted_images = [cv2.imread(path) for path in download_image_120x3(lon, lat, requested_at, "image")]
+    output_image = np.concatenate(splitted_images, axis=1)
+    cv2.imshow('Merged Image', output_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
     # create 
-    return download_image_120x3(lon, lat, requested_at, "image")
+    return 1
+    # return download_image_120x3(lon, lat, requested_at, "image")
