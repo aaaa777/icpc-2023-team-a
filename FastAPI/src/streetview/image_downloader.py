@@ -52,11 +52,9 @@ def download_image_120x3(lon, lat, save_dirname, filename_prefix="gsv"):
 
     return image_pathes
 
-def get_images(location: str):
-    # location = '46.414382,10.013988'
-    # location = '36.32252348212603,139.0112780592011' # jp
-    # location = '13.7037585,100.4664948' # thai
-    lon, lat = location.split(',')
+def get_images(lon: float, lat: float):
+    # ?lon=36.32252348212603&lat=139.0112780592011 # jp
+    # ?lon=13.7037585&lat=100.4664948 # thai
 
     # create dir named datetime.now()
     requested_at = datetime.now().strftime('%Y-%m-%d.%H-%M-%S-%f')
