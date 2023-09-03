@@ -15,6 +15,7 @@ test_locations = [
 ]
 
 for location in test_locations:
-    for img_path in download_image_120x3(location[0], location[1], location[3]):
+    print(location)
+    for img_path in download_image_120x3(location[1], location[0], location[3]):
         print(img_path)
     
