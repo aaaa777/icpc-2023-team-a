@@ -1,6 +1,8 @@
 from datetime import datetime
 import os
 import google_streetview.api
+import cv2
+import numpy as np
 
 from os.path import join
 from dotenv import load_dotenv
@@ -22,7 +24,7 @@ def download_image(lon, lat, heading, save_dirname, save_filename):
     params = [{
         'size': '640x640', # max 640x640 pixels
         # 'location': "46.414382,10.013988",
-        'location': "{},{}".format(lon, lat),
+        'location': "{},{}".format(lat, lon),
         'heading': heading,
         # 'pitch': '-0.76',
         'radius': '10000',
@@ -44,20 +46,36 @@ def download_image(lon, lat, heading, save_dirname, save_filename):
     return join(file_dir, save_filename)
 
 def download_image_120x3(lon, lat, save_dirname, filename_prefix="gsv"):
-    image_pathes = []
+    image_paths = []
     for i, heading in enumerate([0, 120, 240]):
         image_path = "{}_{}.jpg".format(filename_prefix, i)
-        image_pathes.append(image_path)
-        download_image(lon, lat, heading, save_dirname, image_path)
+        image_paths.append(download_image(lon, lat, heading, save_dirname, image_path))
 
-    return image_pathes
+    return image_paths
+
+# concat images
+def concat_images(image_pathes):
+    images = [cv2.imread(path) for path in image_paths]
+    output_image = np.concatenate(images, axis=1)
+    return output_image
 
 def get_images(lon: float, lat: float):
-    # ?lon=36.32252348212603&lat=139.0112780592011 # jp
-    # ?lon=13.7037585&lat=100.4664948 # thai
+    # ?lat=36.32252348212603&lon=139.0112780592011 # jp
+    # ?lat=13.7037585&lon=100.4664948 # thai
 
     # create dir named datetime.now()
     requested_at = datetime.now().strftime('%Y-%m-%d.%H-%M-%S-%f')
 
-    # create 
-    return download_image_120x3(lon, lat, requested_at, "image")
+    # download images
+    splitted_images = [cv2.imread(path) for path in download_image_120x3(lon, lat, requested_at, "image")]
+
+    # concat images
+    output_image = concat_images(splitted_images)
+
+    # check output image
+    # cv2.imshow('Merged Image', output_image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    # return result
+    return output_image
