@@ -14,7 +14,7 @@ https://drive.google.com/drive/folders/18Sbgi0fmRM2W4GknONmmF_W-BhkWp-Vj?usp=sha
 # test localtions
 
 ```
-lat, lon, location
+lon, lat, location
 
 Japan
 43.0790525, 141.5397046, HIU
