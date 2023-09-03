@@ -55,8 +55,8 @@ def download_image_120x3(lon, lat, save_dirname, filename_prefix="image"):
     return image_paths
 
 # concat images
-def concat_images(image_pathes):
-    images = [cv2.imread(path) for path in image_pathes]
+def concat_images(image_paths):
+    images = [cv2.imread(path) for path in image_paths]
     output_image = np.concatenate(images, axis=1)
     return output_image
 
