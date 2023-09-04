@@ -7,9 +7,11 @@ import numpy as np
 from os.path import join
 from dotenv import load_dotenv
 
+from ..exception.streetview import StreetViewPointNotFound, StreetViewLatitudeOutOfRange, StreetViewLongitudeOutOfRange, StreetViewUnknownError, StreetViewZeroResults
+
 load_dotenv(verbose=True)
-# API_KEY = os.environ.get("API_KEY")
-API_KEY = ""
+API_KEY = os.environ.get("API_KEY")
+#API_KEY = ""
 
 download_dir = 'downloads'
 print(API_KEY)
@@ -17,6 +19,12 @@ print(API_KEY)
 # download a image
 
 def download_image(lon, lat, heading, save_dirname, save_filename):
+
+    if(lat < -90 or lat > 90):
+        raise StreetViewLatitudeOutOfRange(lat=lat)
+    
+    if(lon < -180 or lon > 180):
+        raise StreetViewLongitudeOutOfRange(lon=lon)
 
     # decide filename
     file_dir = '{}/{}'.format(download_dir, save_dirname)
@@ -40,6 +48,19 @@ def download_image(lon, lat, heading, save_dirname, save_filename):
     # Download images to directory 'downloads'
     print('downloading image into `{}`'.format(join(file_dir, save_filename)))
     results.download_links(file_dir)
+
+    # check metadata.json
+    print(results.metadata[0]['status'])
+    
+    # error handling
+    if(results.metadata[0]['status'] == 'ZERO_RESULTS'):
+        raise StreetViewZeroResults()
+    
+    if(results.metadata[0]['status'] == 'NOT_FOUND'):
+        raise StreetViewPointNotFound()
+
+    if(results.metadata[0]['status'] != 'OK'):
+        raise StreetViewUnknownError(status=results.metadata[0]['status'], error_message=results.metadata[0]['error_message'])
 
     # rename filename
     os.rename(join(file_dir, 'gsv_0.jpg'), join(file_dir, save_filename))
