@@ -1,7 +1,14 @@
 from fastapi import FastAPI
+
+from FastAPI.src.vehicle_counting import VehicalCounting
 from .streetview.image_downloader import get_images
+  
+
+
+
 
 app = FastAPI()
+
 
 @app.get('/')
 def read_root():
@@ -9,15 +16,16 @@ def read_root():
 
 @app.get('/api/measure_point')
 async def download_image(lon: float, lat: float):
-
-    # get opencv 360 image
-    images = get_images(lon, lat)
     
-    # processing image
-    """some program/function to process image"""
+    images_path = get_images(lon, lat)
+    VC = VehicalCounting(images_path)
     
-    # result
-    # return {'images': images}
+    result = VC.Count()
+    print(result)
+    
+    # Calculation section Here
+    
+    
     return {
         "CO2": 12345678,
         "unit": "ppm",
