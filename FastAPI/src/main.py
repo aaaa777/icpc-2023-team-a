@@ -25,4 +25,8 @@ async def download_image(lon: float, lat: float):
     
     # Calculation section Here
     
-    return {'images': images_path}
+    
+    return {
+        "CO2": 12345678,
+        "unit": "ppm",
+    }

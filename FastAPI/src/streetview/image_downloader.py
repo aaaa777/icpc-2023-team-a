@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv(verbose=True)
 # API_KEY = os.environ.get("API_KEY")
-API_KEY = "AIzaSyDqnSoVRhGABp0iWg-yYsp7Jk6FWlY7vFc"
+API_KEY = ""
 
 download_dir = 'downloads'
 print(API_KEY)
@@ -54,21 +54,23 @@ def download_image_120x3(lon, lat, save_dirname, filename_prefix="gsv"):
 
     return image_paths
 
+# concat images
+def concat_images(image_pathes):
+    images = [cv2.imread(path) for path in image_pathes]
+    output_image = np.concatenate(images, axis=1)
+    return output_image
+
 def get_images(lon: float, lat: float):
-    # ?lon=36.32252348212603&lat=139.0112780592011 # jp
-    # ?lon=13.7037585&lat=100.4664948 # thai
+    # ?lat=36.32252348212603&lon=139.0112780592011 # jp
+    # ?lat=13.7037585&lon=100.4664948 # thai
 
     # create dir named datetime.now()
     requested_at = datetime.now().strftime('%Y-%m-%d.%H-%M-%S-%f')
 
+    # download images
     splitted_images = [cv2.imread(path) for path in download_image_120x3(lon, lat, requested_at, "image")]
+    # output_image = concat_images(splitted_images)
     
-    # output_image = np.concatenate(splitted_images, axis=1)
-    # cv2.imwrite(os.path.join(download_dir,requested_at) + "\merge.jpg",output_image)
-    # cv2.imshow('Merged Image', output_image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
     # create 
-    
     return join(download_dir,requested_at)
     # return download_image_120x3(lon, lat, requested_at, "image")
