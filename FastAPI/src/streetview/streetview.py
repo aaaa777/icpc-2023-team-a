@@ -4,6 +4,8 @@ import google_streetview.api
 import cv2
 import numpy as np
 
+from ..exception.streetview import StreetViewPointNotFound, StreetViewLatitudeOutOfRange, StreetViewLongitudeOutOfRange, StreetViewUnknownError, StreetViewZeroResults
+
 from os.path import join
 from dotenv import load_dotenv
 
@@ -42,6 +44,16 @@ class GoogleStreetView:
         print('downloading image into `{}`'.format(join(file_dir, save_filename)))
         results.download_links(file_dir)
 
+        # error handling
+        if(results.metadata[0]['status'] == 'ZERO_RESULTS'):
+            raise StreetViewZeroResults()
+        
+        if(results.metadata[0]['status'] == 'NOT_FOUND'):
+            raise StreetViewPointNotFound()
+
+        if(results.metadata[0]['status'] != 'OK'):
+            raise StreetViewUnknownError(status=results.metadata[0]['status'], error_message=results.metadata[0]['error_message'])
+
         # rename filename
         os.rename(join(file_dir, 'gsv_0.jpg'), join(file_dir, save_filename))
 
@@ -57,6 +69,9 @@ class GoogleStreetView:
 
         return image_paths
     
+    def get_image_dir(self, images_paths) -> str:
+        return os.path.dirname(images_paths[0])
+
     # show image
     def show_image(self, image_paths: list[str]):
         images = [cv2.imread(path) for path in image_paths]
