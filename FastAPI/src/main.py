@@ -12,6 +12,14 @@ from .measuring.co2 import CO2Counter
 
 from .vehicle_counting import VehicleCounting
 from .streetview.streetview import GoogleStreetView
+from .streetview.image_downloader import get_images
+
+from pydantic import BaseModel
+
+
+class area_req(BaseModel) :
+    points : list
+
 
 app = FastAPI()
 GSV = GoogleStreetView()
@@ -77,3 +85,42 @@ async def get_streetview_image_path(lat: float, lon: float):
         "unit": "ppm",
         "image_path": images_dir,
     }
+    
+@app.post('/api/measure_area')
+async def handler_multiple_point(area : area_req):
+    
+    if(area == None):
+        return {"status" : "No Parameter",
+                "detail" : "No Parameter"}
+        
+    points = area.points
+    
+    if points == None:
+        return {"status" : "No data",
+                "detail" : "No points was sent!!!"}
+
+
+    image_dirs =  []
+    
+    for point in points :
+        print(point)
+        lat = point["lat"]
+        lng = point["lng"]
+        path = get_images(lng,lat)
+        
+        if path != None :
+            image_dirs.append(path)
+        
+        
+    print(image_dirs)
+    
+    point_res = []
+    
+    for dir in image_dirs :
+        VC.set_folder_path(dir)
+        result = VC.Count()
+         
+        print(result)
+        point_res.append(result)
+    
+    return {"status":"OK" ,"point_res" : point_res }
