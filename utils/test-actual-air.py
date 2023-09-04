@@ -3,7 +3,9 @@ import sys
 sys.path.append(parentpath(__file__, 1))
 print(parentpath(__file__, 1))
 
-from FastAPI.src.streetview.image_downloader import download_image_120x3
+import cv2
+import os
+from FastAPI.src.streetview.image_downloader import download_image_120x3, concat_images
 
 test_locations = [
     # (lat, lon, alt, name)
@@ -16,6 +18,13 @@ test_locations = [
 
 for location in test_locations:
     print(location)
-    for img_path in download_image_120x3(location[1], location[0], location[3]):
-        print(img_path)
+    image_paths = download_image_120x3(location[1], location[0], location[3])
+    output_image = concat_images(image_paths)
+
+    # save image
+    # 結合した画像は,image_pathsの親ディレクトリに保存する
+    download_dir = image_paths[0].split('/')[:-1]
+    download_dir = '/'.join(download_dir)
+    cv2.imwrite(os.path.join(download_dir, '{}.jpg'.format(location[3])), output_image)
+    
     
