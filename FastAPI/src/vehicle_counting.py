@@ -1,15 +1,16 @@
 import cv2
 import glob
+from os.path import join
 from FastAPI.src.vehicle_detector import VehicleDetector
 
 class VehicleCounting:
         
-    def __init__(self,folder_path):
+    def __init__(self, folder_path):
         # Load Veichle Detector
         self.vd = VehicleDetector()
         self.folder_path = folder_path
     
-    def set_folder_path(self,path):
+    def set_folder_path(self, path):
         self.folder_path = path
     
     def Count(self):
@@ -26,7 +27,7 @@ class VehicleCounting:
         
         # Load images from a folder
         print(self.folder_path)
-        images_folder = glob.glob(self.folder_path+ "\*.jpg")
+        images_folder = glob.glob(join(self.folder_path, "*.jpg"))
         print("reading image from \n" + self.folder_path )
         
         # Loop through all the images
