@@ -78,3 +78,10 @@ class GoogleStreetView:
         cv2.imshow('', np.concatenate(images, axis=1))
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+
+    # concat images
+    def concat_and_save_images(image_paths):
+        images = [cv2.imread(path) for path in image_paths]
+        output_image = np.concatenate(images, axis=1)
+        # save image
+        cv2.imwrite(os.path.join(os.path.dirname(image_paths[0]), 'output.jpg'), output_image)
