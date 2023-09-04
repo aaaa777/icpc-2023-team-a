@@ -32,7 +32,7 @@ class GoogleStreetView:
             'location': "{},{}".format(lat, lon),
             'heading': heading,
             # 'pitch': '-0.76',
-            'radius': '10000',
+            'radius': '10',
             'fov': '120',
             'key': self.key
         }]

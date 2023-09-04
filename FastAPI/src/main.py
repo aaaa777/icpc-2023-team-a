@@ -56,4 +56,5 @@ async def get_streetview_image_path(lat: float, lon: float):
         "status": "OK",
         "CO2": 12345678,
         "unit": "ppm",
+        "image_path": images_dir,
     }
