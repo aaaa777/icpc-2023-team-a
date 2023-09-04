@@ -1,7 +1,7 @@
 import cv2
 import glob
 from os.path import join
-from FastAPI.src.vehicle_detector import VehicleDetector
+from .vehicle_detector import VehicleDetector
 
 class VehicleCounting:
         
