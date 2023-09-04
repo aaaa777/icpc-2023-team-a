@@ -18,7 +18,7 @@ if(os.path.exists('.env')):
     load_dotenv(verbose=True)
     API_KEY = os.environ.get("API_KEY")
 elif(os.path.exists('FastAPI/.env')):
-    load_dotenv("FastAPI/.env")
+    load_dotenv("FastAPI/.env", verbose=True)
     API_KEY = os.environ.get("API_KEY")
 else:
     API_KEY = ""
