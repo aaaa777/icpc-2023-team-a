@@ -8,8 +8,9 @@ from os.path import join
 from dotenv import load_dotenv
 
 load_dotenv(verbose=True)
+# API_KEY = os.environ.get("API_KEY")
+API_KEY = "AIzaSyDqnSoVRhGABp0iWg-yYsp7Jk6FWlY7vFc"
 
-API_KEY = os.environ.get("API_KEY")
 download_dir = 'downloads'
 print(API_KEY)
 
@@ -61,10 +62,13 @@ def get_images(lon: float, lat: float):
     requested_at = datetime.now().strftime('%Y-%m-%d.%H-%M-%S-%f')
 
     splitted_images = [cv2.imread(path) for path in download_image_120x3(lon, lat, requested_at, "image")]
-    output_image = np.concatenate(splitted_images, axis=1)
-    cv2.imshow('Merged Image', output_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    
+    # output_image = np.concatenate(splitted_images, axis=1)
+    # cv2.imwrite(os.path.join(download_dir,requested_at) + "\merge.jpg",output_image)
+    # cv2.imshow('Merged Image', output_image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
     # create 
-    return 1
+    
+    return join(download_dir,requested_at)
     # return download_image_120x3(lon, lat, requested_at, "image")
