@@ -4,13 +4,25 @@ import google_streetview.api
 import cv2
 import numpy as np
 
-from ..exception.streetview import StreetViewPointNotFound, StreetViewLatitudeOutOfRange, StreetViewLongitudeOutOfRange, StreetViewUnknownError, StreetViewZeroResults
+from ..exception.streetview import \
+    StreetViewPointNotFound, \
+    StreetViewLatitudeOutOfRange, \
+    StreetViewLongitudeOutOfRange, \
+    StreetViewUnknownError, \
+    StreetViewZeroResults
 
 from os.path import join
 from dotenv import load_dotenv
 
-load_dotenv(verbose=True)
-API_KEY = os.environ.get("API_KEY")
+if(os.path.exists('.env')):
+    load_dotenv(verbose=True)
+    API_KEY = os.environ.get("API_KEY")
+elif(os.path.exists('FastAPI/.env')):
+    load_dotenv("FastAPI/.env", verbose=True)
+    API_KEY = os.environ.get("API_KEY")
+else:
+    API_KEY = ""
+
 IMAGE_DOWNLOAD_DIR = 'downloads'
 
 class GoogleStreetView:
@@ -21,6 +33,12 @@ class GoogleStreetView:
 
     # download split images from Google StreetView.
     def download_image(self, lat: float, lon: float, heading: str, save_dirname: str, save_filename : str) -> str:
+
+        if(lat < -90 or lat > 90):
+            raise StreetViewLatitudeOutOfRange(lat=lat)
+    
+        if(lon < -180 or lon > 180):
+            raise StreetViewLongitudeOutOfRange(lon=lon)
 
         # decide filename
         file_dir = '{}/{}'.format(self.download_dir, save_dirname)
@@ -40,10 +58,17 @@ class GoogleStreetView:
         # Create a results object
         results = google_streetview.api.results(params)
 
+        # Get image status
+        img_status = results.metadata[0]["status"]
+        print("Image Status : " + img_status)
+
         # Download images to directory 'downloads'
         print('downloading image into `{}`'.format(join(file_dir, save_filename)))
         results.download_links(file_dir)
 
+        # check metadata.json
+        #print(results.metadata[0]['status'])
+        
         # error handling
         if(results.metadata[0]['status'] == 'ZERO_RESULTS'):
             raise StreetViewZeroResults()
@@ -85,3 +110,9 @@ class GoogleStreetView:
         output_image = np.concatenate(images, axis=1)
         # save image
         cv2.imwrite(os.path.join(os.path.dirname(image_paths[0]), 'output.jpg'), output_image)
+
+    # concat images
+    def concat_images(image_paths):
+        images = [cv2.imread(path) for path in image_paths]
+        output_image = np.concatenate(images, axis=1)
+        return output_image
