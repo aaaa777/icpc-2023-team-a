@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv(verbose=True)
 # API_KEY = os.environ.get("API_KEY")
-API_KEY = ""
+API_KEY = "AIzaSyDqnSoVRhGABp0iWg-yYsp7Jk6FWlY7vFc"
 
 download_dir = 'downloads'
 print(API_KEY)
@@ -35,7 +35,14 @@ def download_image(lon, lat, heading, save_dirname, save_filename):
 
     # Create a results object
     results = google_streetview.api.results(params)
-
+    
+    # Get image status
+    img_status = results.metadata[0]["status"]
+    print("Image Status : " + img_status)
+    
+    # IF image not found 
+    if  img_status == "NOT_FOUND" or img_status == "ZERO_RESULTS" :
+        return "Fail"
 
     # Download images to directory 'downloads'
     print('downloading image into `{}`'.format(join(file_dir, save_filename)))
@@ -50,7 +57,12 @@ def download_image_120x3(lon, lat, save_dirname, filename_prefix="gsv"):
     image_paths = []
     for i, heading in enumerate([0, 120, 240]):
         image_path = "{}_{}.jpg".format(filename_prefix, i)
-        image_paths.append(download_image(lon, lat, heading, save_dirname, image_path))
+        
+        imgpath = download_image(lon, lat, heading, save_dirname, image_path)
+        if imgpath != "Fail" : 
+            image_paths.append(imgpath)
+        else :
+            break;
 
     return image_paths
 
@@ -68,8 +80,12 @@ def get_images(lon: float, lat: float):
     requested_at = datetime.now().strftime('%Y-%m-%d.%H-%M-%S-%f')
 
     # download images
-    splitted_images = [cv2.imread(path) for path in download_image_120x3(lon, lat, requested_at, "image")]
+    # splitted_images = [cv2.imread(path) for path in download_image_120x3(lon, lat, requested_at, "image")]
     # output_image = concat_images(splitted_images)
+    
+    image = download_image_120x3(lon, lat, requested_at, "image")
+    if len(image) == 0 :
+        return
     
     # create 
     return join(download_dir,requested_at)
