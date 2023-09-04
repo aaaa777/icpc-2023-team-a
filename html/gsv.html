@@ -14,13 +14,13 @@ td {
 </style>
 </head>
 <body onload="initialize()">
-<h2>GMap Streetview API テスト </h2>
+    <h2>GMap Streetview API テスト </h2>
     <input id="address" type="textbox" value="高崎駅">
     <input type="button" value="検索" onclick="addressSearch()">
-<div style="margin-top: 10px;">
-    <div id="map_canvas" style="float:left;width: 600px; height: 400px"></div>
-    <div id="pano" style="width: 600px; height: 400px;"></div>
-</div>
+    <div style="margin-top: 10px;">
+        <div id="map_canvas" style="float:left;width: 600px; height: 400px"></div>
+        <div id="pano" style="width: 600px; height: 400px;"></div>
+    </div>
     <div id="panoInfo" style="width: 800px; height: 240 px;">
         <table>
             <tr>
@@ -31,8 +31,9 @@ td {
             </tr>
         </table>
     </div>
+    <div>
 
-
+    </div>
 </body>
 </html>
 
@@ -102,26 +103,26 @@ function output(panorama){
 	"&zoom=" + zoom;
 }
 
-//讀懃ｴ｢
+//検索
 function addressSearch(){    
     var address = document.getElementById('address').value;    
     geocoder.geocode({ 'address': address}, function(results, status){
         if(status == google.maps.GeocoderStatus.OK) {
-            map.setCenter(results[0].geometry.location); //蝨ｰ蝗ｳ遘ｻ蜍�
+            map.setCenter(results[0].geometry.location); //地図を移動
             
-            sv.getPanoramaByLocation(    //謖�ｮ壹＆繧後◆霆ｽ蠎ｦ邱ｯ蠎ｦ荳翫↓繧ｹ繝医Μ繝ｼ繝医ン繝･繝ｼ縺悟ｭ伜惠縺吶ｋ縺九メ繧ｧ繝�け
+            sv.getPanoramaByLocation(    //指定された緯度経度にストリートビューが存在するかチェック
                 results[0].geometry.location,
-                500, //讀懃ｴ｢遽�峇(m)
+                500, //検索半径(m)
                 function(svData,svStatus){
                     if(svStatus == google.maps.StreetViewStatus.OK){
-                        panorama.setPosition(svData.location.latLng);    //繧ｹ繝医Μ繝ｼ繝医ン繝･繝ｼ遘ｻ蜍�                        
+                        panorama.setPosition(svData.location.latLng);    //ストリートビューを移動
                     }else{
-                        alert("繧ｹ繝医Μ繝ｼ繝医ン繝･繝ｼ蟇ｾ雎｡螟悶�蝨ｰ蝓溘〒縺吶�")
+                        alert("ストリートビュー対象外地域です")
                     };
                 }
             );
         } else {
-             alert('蠎ｧ讓吶�蜿門ｾ励↓螟ｱ謨励＠縺ｾ縺励◆: ' + status);
+             alert('座標取得に失敗しました: ' + status);
         }
     });
 } 
