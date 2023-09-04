@@ -36,7 +36,6 @@ def download_image(lon, lat, heading, save_dirname, save_filename):
     # Create a results object
     results = google_streetview.api.results(params)
 
-
     # Download images to directory 'downloads'
     print('downloading image into `{}`'.format(join(file_dir, save_filename)))
     results.download_links(file_dir)

@@ -1,14 +1,9 @@
 from fastapi import FastAPI
 
-from FastAPI.src.vehicle_counting import VehicalCounting
+from .vehicle_counting import VehicleCounting
 from .streetview.image_downloader import get_images
-  
-
-
-
 
 app = FastAPI()
-
 
 @app.get('/')
 def read_root():
@@ -18,13 +13,12 @@ def read_root():
 async def download_image(lon: float, lat: float):
     
     images_path = get_images(lon, lat)
-    VC = VehicalCounting(images_path)
+    VC = VehicleCounting(images_path)
     
     result = VC.Count()
     print(result)
     
     # Calculation section Here
-    
     
     return {
         "CO2": 12345678,
