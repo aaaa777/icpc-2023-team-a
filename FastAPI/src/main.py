@@ -15,7 +15,7 @@ from .streetview.streetview import GoogleStreetView
 
 from pydantic import BaseModel
 
-
+# /api/measure_area
 class area_req(BaseModel) :
     points : list
 
