@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv(verbose=True)
 API_KEY = os.environ.get("API_KEY")
-IMAGE_DOWNLOAD_DIR = 'downloads'
+IMAGE_DOWNLOAD_DIR = 'downloads/'
 
 class GoogleStreetView:
     
@@ -21,7 +21,7 @@ class GoogleStreetView:
     def download_image(self, lat: float, lon: float, heading: str, save_dirname: str, save_filename : str) -> str:
 
         # decide filename
-        file_dir = '{}/{}'.format(self.download_dir, save_dirname)
+        file_dir = self.download_dir + save_dirname
 
         # Define parameters for street view api
         params = [{
