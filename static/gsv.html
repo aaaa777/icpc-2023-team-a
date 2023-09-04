@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GSV</title>
+    <link rel="stylesheet" href="static/css/gsv.css">
+    <script src="static/js/jquery-3.2.1.min.js"></script>
+    <script src="static/js/gsv.js"></script>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="pano"></div>
+    <div id="info"></div>
+</body>
+
+<script>
+    var map;
+var geocoder = new google.maps.Geocoder();
+var sv = new google.maps.StreetViewService();
+var panorama;
+
+
+    
+function initialize() {
+    defPos = new google.maps.LatLng(36.322512, 139.01122399999997);
+    
+    //蝨ｰ蝗ｳ蛻晄悄蛹� 
+    var mapOptions = {
+        center: defPos,
+        zoom: 14,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+
+    //繧ｹ繝医Μ繝ｼ繝医ン繝･繝ｼ蛻晄悄蛹�
+    var panoramaOptions = {
+		panControl: false,
+		addressControl: false,
+		linksControl: false,
+		zoomControlOptions: false,		
+        position: defPos,
+        pov: {
+            heading: 88,
+            pitch: 7
+        }
+    };  
+    panorama = new  google.maps.StreetViewPanorama(document.getElementById('pano'),panoramaOptions);
+    map.setStreetView(panorama);
+      
+  
+  
+    //繧ｹ繝医Μ繝ｼ繝医ン繝･繝ｼ縺ｫeventListener逋ｻ骭ｲ
+    google.maps.event.addListener(panorama, 'position_changed', function() {
+		output(panorama);
+    });
+    google.maps.event.addListener(panorama, 'pov_changed', function() {
+		output(panorama);
+    });
+	
+	
+}
+
+function output(panorama){
+	var location = panorama.getPosition();
+	var heading = panorama.getPov().heading;
+	var pitch = panorama.getPov().pitch;
+	var zoom = panorama.getPov().zoom;
+	
+	var locationCell = document.getElementById('location_cell');
+	var headingCell = document.getElementById('heading_cell');
+	var pitchCell = document.getElementById('pitch_cell');
+	var zommCell = document.getElementById('zoom_cell');
+
+   
+	locationCell.firstChild.nodeValue = location;
+	headingCell.firstChild.nodeValue = heading;
+	pitchCell.firstChild.nodeValue = pitch;
+	zommCell.firstChild.nodeValue = zoom
+	
+	var fovCell = document.getElementById('fov_cell');
+	var fov = 180 / Math.pow(2 , zoom);
+	fov = (fov < 10 ? 10 : fov);
+	fov = (fov > 120 ? 120 : fov);
+	fovCell.firstChild.nodeValue = fov;
+	
+	var stvImageURL = document.getElementById('stvImageURL');
+	stvImageURL.value = "https://maps.googleapis.com/maps/api/streetview?size=400x400"+
+	"&location="+ location.toUrlValue() +
+	"&heading="+ heading +
+	"&pitch="+ pitch +
+	"&fov="+ fov +
+	"&zoom=" + zoom;
+}
+
+//讀懃ｴ｢
+function addressSearch(){    
+    var address = document.getElementById('address').value;    
+    geocoder.geocode({ 'address': address}, function(results, status){
+        if(status == google.maps.GeocoderStatus.OK) {
+            map.setCenter(results[0].geometry.location); //蝨ｰ蝗ｳ遘ｻ蜍�
+            
+            sv.getPanoramaByLocation(    //謖�ｮ壹＆繧後◆霆ｽ蠎ｦ邱ｯ蠎ｦ荳翫↓繧ｹ繝医Μ繝ｼ繝医ン繝･繝ｼ縺悟ｭ伜惠縺吶ｋ縺九メ繧ｧ繝�け
+                results[0].geometry.location,
+                500, //讀懃ｴ｢遽�峇(m)
+                function(svData,svStatus){
+                    if(svStatus == google.maps.StreetViewStatus.OK){
+                        panorama.setPosition(svData.location.latLng);    //繧ｹ繝医Μ繝ｼ繝医ン繝･繝ｼ遘ｻ蜍�                        
+                    }else{
+                        alert("繧ｹ繝医Μ繝ｼ繝医ン繝･繝ｼ蟇ｾ雎｡螟悶�蝨ｰ蝓溘〒縺吶�")
+                    };
+                }
+            );
+        } else {
+             alert('蠎ｧ讓吶�蜿門ｾ励↓螟ｱ謨励＠縺ｾ縺励◆: ' + status);
+        }
+    });
+} 
+</script>
