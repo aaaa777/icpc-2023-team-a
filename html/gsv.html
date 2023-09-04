@@ -1,20 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE HTML>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>GSV</title>
-    <link rel="stylesheet" href="static/css/gsv.css">
-    <script src="static/js/jquery-3.2.1.min.js"></script>
-    <script src="static/js/gsv.js"></script>
+<title>GMap Streetview example</title>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAnRF3NrC3g67anVpLYCVUaV7h-HIow_H4"></script>
+<!-- <script src="index.js"></script> -->
+<style>
+.cell {
+	width: 100%;
+}
+td {
+	white-space:nowrap;
+}
+</style>
 </head>
-<body>
-    <div id="map"></div>
-    <div id="pano"></div>
-    <div id="info"></div>
+<body onload="initialize()">
+<h2>GMap Streetview API テスト </h2>
+    <input id="address" type="textbox" value="高崎駅">
+    <input type="button" value="検索" onclick="addressSearch()">
+<div style="margin-top: 10px;">
+    <div id="map_canvas" style="float:left;width: 600px; height: 400px"></div>
+    <div id="pano" style="width: 600px; height: 400px;"></div>
+</div>
+    <div id="panoInfo" style="width: 800px; height: 240 px;">
+        <table>
+            <tr>
+                <td><b>location</b></td><td id="location_cell" class="cell">&nbsp;</td>
+            </tr>
+            <tr>
+                <td><b>Streetview image API</b></td><td  class="cell"><input id="stvImageURL" type="text" style="width: 100%" /></td>
+            </tr>
+        </table>
+    </div>
+
+
 </body>
+</html>
 
 <script>
-    var map;
+var map;
 var geocoder = new google.maps.Geocoder();
 var sv = new google.maps.StreetViewService();
 var panorama;
@@ -67,28 +90,15 @@ function output(panorama){
 	var zoom = panorama.getPov().zoom;
 	
 	var locationCell = document.getElementById('location_cell');
-	var headingCell = document.getElementById('heading_cell');
-	var pitchCell = document.getElementById('pitch_cell');
-	var zommCell = document.getElementById('zoom_cell');
-
    
 	locationCell.firstChild.nodeValue = location;
-	headingCell.firstChild.nodeValue = heading;
-	pitchCell.firstChild.nodeValue = pitch;
-	zommCell.firstChild.nodeValue = zoom
-	
-	var fovCell = document.getElementById('fov_cell');
-	var fov = 180 / Math.pow(2 , zoom);
-	fov = (fov < 10 ? 10 : fov);
-	fov = (fov > 120 ? 120 : fov);
-	fovCell.firstChild.nodeValue = fov;
 	
 	var stvImageURL = document.getElementById('stvImageURL');
 	stvImageURL.value = "https://maps.googleapis.com/maps/api/streetview?size=400x400"+
 	"&location="+ location.toUrlValue() +
 	"&heading="+ heading +
 	"&pitch="+ pitch +
-	"&fov="+ fov +
+	"&fov=120" +
 	"&zoom=" + zoom;
 }
 

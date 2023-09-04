@@ -26,7 +26,11 @@ GSV = GoogleStreetView()
 VC = VehicleCounting(None)
 CC = CO2Counter()
 
+# download images
 app.mount("/downloads", StaticFiles(directory="downloads"), name="static")
+
+# html file
+app.mount("/html", StaticFiles(directory="html", html=True), name="html")
 
 
 @app.get('/')
