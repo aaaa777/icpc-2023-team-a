@@ -1,41 +1,31 @@
 import cv2
-import glob
 from FastAPI.src.vehicle_detector import VehicleDetector
 
 class VehicleCounting:
         
-    def __init__(self,folder_path):
+    def __init__(self):
         # Load Veichle Detector
         self.vd = VehicleDetector()
-        self.folder_path = folder_path
     
-    def set_folder_path(self,path):
-        self.folder_path = path
-    
-    def Count(self):
+    def count(self, img_paths: list[str]):
         
         total_vehicle_count = {
-            "car":0,
-            "motorbike":0,
-            "bus":0,
-            "train":0,
-            "truck":0
+            "car": 0,
+            "motorbike": 0,
+            "bus": 0,
+            "train": 0,
+            "truck": 0
         }
         
         vehicle_count_list = []
         
-        # Load images from a folder
-        print(self.folder_path)
-        images_folder = glob.glob(self.folder_path+ "\*.jpg")
-        print("reading image from \n" + self.folder_path )
-        
         # Loop through all the images
-        for img_path in images_folder:
+        for img_path in img_paths:
             vehicles_folder_count = 0
-            print("Img path", img_path)
+            print("Img path: ", img_path)
             img = cv2.imread(img_path)
 
-            vehicle_boxes,vehicle_count = self.vd.detect_vehicles(img).values()
+            vehicle_boxes, vehicle_count = self.vd.detect_vehicles(img).values()
             
             total = len(vehicle_boxes)
             # Update total count
