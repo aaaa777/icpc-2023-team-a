@@ -1,14 +1,15 @@
 import cv2
 import numpy as np
+from os.path import join
 
-DNN_MODEL_PATH =  "C:\MyProject\icpc-2023-team-a\FastAPI\dnn_model"
+DNN_MODEL_PATH =  "FastAPI/dnn_model"
 
 class VehicleDetector:
 
     def __init__(self):
         # Load Network
 
-        net = cv2.dnn.readNet(DNN_MODEL_PATH+"\yolov4.weights", DNN_MODEL_PATH + "\yolov4.cfg")
+        net = cv2.dnn.readNet(join(DNN_MODEL_PATH, "yolov4.weights"), join(DNN_MODEL_PATH, "yolov4.cfg"))
         self.model = cv2.dnn_DetectionModel(net)
         self.model.setInputParams(size=(832, 832), scale=1 / 255)
 
@@ -22,7 +23,7 @@ class VehicleDetector:
             5:"bus",
             6:"train",
             7:"truck"
-            }
+        }
         
         # 2 = car
         # 3 = motorbike

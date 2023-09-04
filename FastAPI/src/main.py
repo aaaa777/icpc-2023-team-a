@@ -21,6 +21,8 @@ async def download_image(lon: float, lat: float):
     # try to download image
     try:
         images_path = get_images(lon, lat)
+
+    # error handling
     except StreetViewPointNotFound as e:
         raise HTTPException(status_code=404, detail="StreetViewPoint not found")
     except StreetViewLatitudeOutOfRange as e:
