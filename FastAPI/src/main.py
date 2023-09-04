@@ -1,22 +1,27 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 
-from FastAPI.src.vehicle_counting import VehicalCounting
-from .streetview.image_downloader import get_images
+
+
   
 from .exception.streetview import StreetViewPointNotFound, StreetViewLatitudeOutOfRange, StreetViewLongitudeOutOfRange, StreetViewUnknownError, StreetViewZeroResults
 
 
+from .vehicle_counting import VehicleCounting
+from .streetview.streetview import GoogleStreetView
 
 app = FastAPI()
-
+GSV = GoogleStreetView()
 
 @app.get('/')
 def read_root():
     return {"Hello": "World"}
 
 @app.get('/api/measure_point')
-async def download_image(lon: float, lat: float):
+async def get_streetview_image_path(lat: float, lon: float):
+    
+    stview_image_paths = GSV.get_split_image_paths(lat, lon)
+    GSV.show_image(stview_image_paths)
     
     # try to download image
     try:
@@ -38,7 +43,7 @@ async def download_image(lon: float, lat: float):
 
     # Calculation section Here
     try:
-        VC = VehicalCounting(images_path)
+        VC = VehicleCounting(images_path)
     except Exception as e:
         raise HTTPException(status_code=500, detail="Unknown error: {}".format(e))
     

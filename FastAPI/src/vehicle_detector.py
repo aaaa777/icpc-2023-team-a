@@ -13,7 +13,6 @@ class VehicleDetector:
         self.model = cv2.dnn_DetectionModel(net)
         self.model.setInputParams(size=(832, 832), scale=1 / 255)
 
-
         # Allow classes containing Vehicles only
         # self.classes_allowed = [2, 3, 5, 6, 7]
         
@@ -35,7 +34,6 @@ class VehicleDetector:
         self.classes_allowed = list(self.dict_class.keys())
         
 
-
     def detect_vehicles(self, img):
         
         vehicle_count = {
@@ -44,7 +42,7 @@ class VehicleDetector:
             "bus":0,
             "train":0,
             "truck":0
-            }
+        }
         
         # Detect Objects
         vehicles_boxes = []
