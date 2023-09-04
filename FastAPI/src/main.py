@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from .exception.streetview import \
     StreetViewPointNotFound, \
@@ -24,6 +25,9 @@ app = FastAPI()
 GSV = GoogleStreetView()
 VC = VehicleCounting(None)
 CC = CO2Counter()
+
+app.mount("/downloads", StaticFiles(directory="downloads"), name="static")
+
 
 @app.get('/')
 def read_root():
@@ -83,7 +87,7 @@ async def get_streetview_image_path(lat: float, lon: float):
         "CO2": co2_amount,
         "unit": "ppm",
         "vehicle_count": result,
-        "image_path": images_dir,
+        "image_path": ["/" + image_path for image_path in images_paths],
     }
 
 
