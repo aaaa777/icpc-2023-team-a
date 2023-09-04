@@ -1,9 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 
 from FastAPI.src.vehicle_counting import VehicalCounting
 from .streetview.image_downloader import get_images
   
-
+from .exception.streetview import StreetViewPointNotFound, StreetViewLatitudeOutOfRange, StreetViewLongitudeOutOfRange, StreetViewUnknownError, StreetViewZeroResults
 
 
 
@@ -17,8 +18,27 @@ def read_root():
 @app.get('/api/measure_point')
 async def download_image(lon: float, lat: float):
     
-    images_path = get_images(lon, lat)
-    VC = VehicalCounting(images_path)
+    # try to download image
+    try:
+        images_path = get_images(lon, lat)
+    except StreetViewPointNotFound as e:
+        raise HTTPException(status_code=404, detail="StreetViewPoint not found")
+    except StreetViewLatitudeOutOfRange as e:
+        raise HTTPException(status_code=400, detail="StreetViewLatitude out of range: {}".format(e.lat))
+    except StreetViewLongitudeOutOfRange as e:
+        raise HTTPException(status_code=400, detail="StreetViewLongitude out of range: {}".format(e.lon))
+    except StreetViewUnknownError as e:
+        raise HTTPException(status_code=500, detail="StreetViewUnknownError: [{status}] {error_message}".format(status=e.status, error_message=e.error_message))
+    except StreetViewZeroResults as e:
+        raise HTTPException(status_code=500, detail="StreetViewZeroResults")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Unknown error: {}".format(e))
+
+    # Calculation section Here
+    try:
+        VC = VehicalCounting(images_path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Unknown error: {}".format(e))
     
     result = VC.Count()
     print(result)
@@ -27,6 +47,7 @@ async def download_image(lon: float, lat: float):
     
     
     return {
+        "status": "OK",
         "CO2": 12345678,
         "unit": "ppm",
     }
