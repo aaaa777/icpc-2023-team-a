@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from os.path import join
 
-DNN_MODEL_PATH =  "FastAPI/dnn_model"
+DNN_MODEL_PATH = "FastAPI/dnn_model"
 
 class VehicleDetector:
 

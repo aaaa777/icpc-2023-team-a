@@ -4,7 +4,12 @@ import google_streetview.api
 import cv2
 import numpy as np
 
-from ..exception.streetview import StreetViewPointNotFound, StreetViewLatitudeOutOfRange, StreetViewLongitudeOutOfRange, StreetViewUnknownError, StreetViewZeroResults
+from ..exception.streetview import \
+    StreetViewPointNotFound, \
+    StreetViewLatitudeOutOfRange, \
+    StreetViewLongitudeOutOfRange, \
+    StreetViewUnknownError, \
+    StreetViewZeroResults
 
 from os.path import join
 from dotenv import load_dotenv

@@ -12,7 +12,6 @@ from .measuring.co2 import CO2Counter
 
 from .vehicle_counting import VehicleCounting
 from .streetview.streetview import GoogleStreetView
-from .streetview.image_downloader import get_images
 
 from pydantic import BaseModel
 
