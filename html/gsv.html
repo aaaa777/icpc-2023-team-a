@@ -3,37 +3,56 @@
 <head>
 <title>GMap Streetview example</title>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAnRF3NrC3g67anVpLYCVUaV7h-HIow_H4"></script>
+<!-- bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
 <!-- <script src="index.js"></script> -->
 <style>
-.cell {
-	width: 100%;
-}
 td {
 	white-space:nowrap;
 }
 </style>
 </head>
 <body onload="initialize()">
-    <h2>GMap Streetview API テスト </h2>
-    <input id="address" type="textbox" value="高崎駅">
-    <input type="button" value="検索" onclick="addressSearch()">
-    <div style="margin-top: 10px;">
-        <div id="map_canvas" style="float:left;width: 600px; height: 400px"></div>
-        <div id="pano" style="width: 600px; height: 400px;"></div>
+<div class="container-md">
+    <div class="px-4">
+    <div class="row">
+        <h2 class="col">GMap Streetview API Tester</h2>
+        <div class="col d-flex justify-content-end">
+            <input id="address" type="textbox" value="Sapporo Station">
+            <input id="submit-address" type="button" value="Search" onclick="addressSearch()">
+        </div>
     </div>
-    <div id="panoInfo" style="width: 800px; height: 240 px;">
-        <table>
-            <tr>
-                <td><b>location</b></td><td id="location_cell" class="cell">&nbsp;</td>
-            </tr>
-            <tr>
-                <td><b>Streetview image API</b></td><td  class="cell"><input id="stvImageURL" type="text" style="width: 100%" /></td>
-            </tr>
-        </table>
+    <div class="row">
+        <div id="map_canvas" class="col-12" style="min-height: 400px;"></div>
+        <div id="pano" class="col-12"></div>
     </div>
-    <div>
-
+    <div class="col" id="panoInfo">
+        <div class="row"><div class="col"><b>location</b></div><div id="location_cell" class="col cell">&nbsp;</div></div>
+        <div class="row"><div class="col"><b>Streetview image API</b></div><div class="col cell"><input id="stvImageURL" type="text"/></div></div>
     </div>
+    <div class="row request-record-list" id="request-record-list">
+        <div id="request-record-base" style="height: 7rem; display: none;">
+            <div class="row d-flex flex-row request-record border rounded align-items-center">
+                <div class="col">
+                    <div class="d-flex flex-row justify-content-start">
+                        <div class="row p-1"><img id="box_0" src="http://wp-master.club/wp-content/uploads/2018/10/loading.gif" class="img-fluid streetview-box-image" style="max-height: 6.4rem;"></div>
+                        <div class="row p-1"><img id="box_1" src="http://wp-master.club/wp-content/uploads/2018/10/loading.gif" class="img-fluid streetview-box-image" style="max-height: 6.4rem;"></div>
+                        <div class="row p-1"><img id="box_2" src="http://wp-master.club/wp-content/uploads/2018/10/loading.gif" class="img-fluid streetview-box-image" style="max-height: 6.4rem;"></div>
+                    </div>
+                </div>
+                <div class="col justify-content-end">
+                    <div class="d-flex flex-column">
+                        <div class="text-end fs-md-5 fs-6 line1">lat, lng = -, -</div>
+                        <div class="text-end fs-md-5 fs-6 line2">CO2: -</div>
+                        <!-- <div class="text-end fs-md-5 fs-6 line3">API URL: -</div> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
 </body>
 </html>
 
@@ -42,10 +61,11 @@ var map;
 var geocoder = new google.maps.Geocoder();
 var sv = new google.maps.StreetViewService();
 var panorama;
+var isFirstTimeOnLocationChanged = false;
 
 
     
-function initialize() {
+const initialize = () => {
     defPos = new google.maps.LatLng(36.322512, 139.01122399999997);
     
     //蝨ｰ蝗ｳ蛻晄悄蛹� 
@@ -70,21 +90,89 @@ function initialize() {
     };  
     panorama = new  google.maps.StreetViewPanorama(document.getElementById('pano'),panoramaOptions);
     map.setStreetView(panorama);
-      
-  
-  
+
+
     //繧ｹ繝医Μ繝ｼ繝医ン繝･繝ｼ縺ｫeventListener逋ｻ骭ｲ
-    google.maps.event.addListener(panorama, 'position_changed', function() {
-		output(panorama);
-    });
-    google.maps.event.addListener(panorama, 'pov_changed', function() {
-		output(panorama);
-    });
+    google.maps.event.addListener(panorama, 'position_changed', function () {
+        if (!isFirstTimeOnLocationChanged) {
+            isFirstTimeOnLocationChanged = true;
+            return;
+        }
+		onLocationChanged(panorama);
+    }, {passive: true});
+    // google.maps.event.addListener(panorama, 'pov_changed', () => {
+	// 	output(panorama);
+    // }, {passive: true});
+	let text_form = document.getElementById('address');
+    let submit_button = document.getElementById('submit-address');
+
+    
+    const search_event = (e) => {
+        if (e.keyCode === 13) {
+            submit_button.click();
+        }  
+        return false;
+    }
 	
-	
+    text_form.addEventListener('keypress', search_event);
 }
 
-function output(panorama){
+const onLocationChanged = async (panorama) => {
+    let recordEle = createRecordElement(panorama);
+    output(panorama);
+    let json = await calculateCO2(panorama);
+    displayImages(recordEle, json);
+    setDetails(recordEle, json);
+}
+
+const calculateCO2 = async (panorama) => {
+    let location = panorama.getPosition();
+    let json = fetch("/api/measure_point?lat=" + location.lat() + "&lon=" + location.lng()).then(res => res.json());
+    console.log("fetching measure point");
+    console.log(json);
+    return await json;
+}
+
+const createRecordElement = (panorama) => {
+    let recordList = document.getElementById("request-record-list");
+    let baseRecord = document.getElementById("request-record-base");
+
+    // console.log(baseRecord);
+    let location = panorama.getPosition();
+    let record = baseRecord.cloneNode(true);
+    record.removeAttribute("id");
+    record.style.display = "block";
+
+    let line1Ele = record.querySelector(".line1");
+    line1Ele.innerText = "lat, lon: " + location.lat() + ", " + location.lng();
+    
+    recordList.appendChild(record);
+    return record;
+}
+
+const displayImages = (recordEle, json) => {
+    console.log(json);
+    let images = json.images_paths.boxed;
+
+    // recordEleの中のimgタグのsrcをimagesに変更
+    for (let i = 0; i < images.length; i++) {
+        let img = recordEle.querySelector("#box_" + i);
+        img.src = images[i];
+    }
+}
+
+const setDetails = (recordEle, json) => {
+    let co2 = json.CO2;
+    let api_url = "none";
+    let latlonEle = recordEle.querySelector(".line1");
+    let co2Ele = recordEle.querySelector(".line2");
+    // let apiEle = recordEle.querySelector(".line3");
+    // latlonEle.innerText = "lat, lon: " + lat + ", " + lon;
+    co2Ele.innerText = "CO2: " + co2 + ", vehicles: " + JSON.stringify(json.vehicle_count);
+    // apiEle.innerText = "API URL: " + api_url;
+}
+
+const output = (panorama) => {
 	var location = panorama.getPosition();
 	var heading = panorama.getPov().heading;
 	var pitch = panorama.getPov().pitch;
@@ -104,7 +192,7 @@ function output(panorama){
 }
 
 //検索
-function addressSearch(){    
+const addressSearch = async () => {    
     var address = document.getElementById('address').value;    
     geocoder.geocode({ 'address': address}, function(results, status){
         if(status == google.maps.GeocoderStatus.OK) {
@@ -117,12 +205,12 @@ function addressSearch(){
                     if(svStatus == google.maps.StreetViewStatus.OK){
                         panorama.setPosition(svData.location.latLng);    //ストリートビューを移動
                     }else{
-                        alert("ストリートビュー対象外地域です")
+                        alert("out of streetiew area")
                     };
                 }
             );
         } else {
-             alert('座標取得に失敗しました: ' + status);
+            alert('fail to get location: ' + status);
         }
     });
 } 
