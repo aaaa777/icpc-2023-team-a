@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .exception.streetview import \
@@ -14,8 +14,18 @@ from .measuring.co2 import CO2Counter
 from .vehicle_counting import VehicleCounting
 from .streetview.streetview import GoogleStreetView
 
+from .cloud.gcp.storage import CloudStorageService
+
 from pydantic import BaseModel
 from os.path import join, basename, dirname
+import os
+
+from dotenv import load_dotenv
+
+if(os.path.exists('.env')):
+    load_dotenv(verbose=True)
+elif(os.path.exists('FastAPI/.env')):
+    load_dotenv("FastAPI/.env", verbose=True)
 
 # /api/measure_area
 class area_req(BaseModel) :
@@ -27,8 +37,24 @@ GSV = GoogleStreetView()
 VC = VehicleCounting(None)
 CC = CO2Counter()
 
+CSS = CloudStorageService(bucket_name="icpc-a", path_prefix="temp")
+
 # download images
-app.mount("/downloads", StaticFiles(directory="downloads"), name="static")
+if(os.environ.get("S3_PROVIDER") == "GCP"):
+
+    print("GCP Object Storage Setting loaded")
+    @app.get('/downloads/{directory}/{filename}')
+    def download_file(directory: str, filename: str):
+        file_path = "downloads/{}/{}".format(directory, filename)
+        CSS.download_file(file_path)
+        return FileResponse(
+            file_path
+        )
+else:
+
+    print("Local Object Storage Setting loaded")
+    app.mount("/downloads", StaticFiles(directory="downloads"), name="static")
+
 
 # html file
 app.mount("/html", StaticFiles(directory="html", html=True), name="html")
@@ -38,6 +64,16 @@ app.mount("/html", StaticFiles(directory="html", html=True), name="html")
 def read_root():
     return {"Hello": "World"}
 
+@app.get('/api/test')
+def test():
+    CSS.upload_file("downloads/2023-09-05.10-16-00-253819/boxed_image_0.jpg", "downloads/2023-09-05.10-16-00-253819/boxed_image_0.jpg")
+
+@app.get('/api/test2')
+def test2():
+    CSS.download_file("downloads/2023-09-05.10-16-00-253819/boxed_image_0.jpg")
+    return FileResponse(
+        "downloads/2023-09-05.10-16-00-253819/boxed_image_0.jpg"
+    )
 
 # single point
 @app.get('/api/measure_point')
