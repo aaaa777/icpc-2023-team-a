@@ -1,0 +1,240 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>GMap Streetview example</title>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAnRF3NrC3g67anVpLYCVUaV7h-HIow_H4"></script>
+<!-- bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+
+<!-- lightbox -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.7.1/css/lightbox.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.7.1/js/lightbox.min.js" type="text/javascript"></script>
+<!-- <script src="index.js"></script> -->
+<style>
+td {
+	white-space:nowrap;
+}
+</style>
+</head>
+<body onload="initialize()">
+<div class="container-md">
+    <div class="px-4">
+    <div class="row">
+        <h2 class="col">Streetview Tester</h2>
+        <div class="col d-flex justify-content-end">
+            <input id="address" type="textbox" value="Sapporo Station">
+            <input id="submit-address" type="button" value="Search" onclick="addressSearch()">
+        </div>
+    </div>
+    <div class="row">
+        <div id="map_canvas" class="col-12" style="min-height: 400px;"></div>
+        <div id="pano" class="col-12"></div>
+    </div>
+    <div class="col" id="panoInfo">
+        <div class="row"><div class="col"><b>location</b></div><div id="location_cell" class="col cell">&nbsp;</div></div>
+        <div class="row"><div class="col"><b>Streetview image API</b></div><div class="col cell"><input id="stvImageURL" type="text"/></div></div>
+    </div>
+    <div class="row request-record-list" id="request-record-list">
+        <div id="request-record-base" style="height: 7rem; display: none;">
+            <div class="row d-flex flex-row request-record border rounded align-items-center">
+                <div class="col">
+                    <div class="d-flex flex-row justify-content-start">
+                        <a id="a_box_0"><div class="row p-1"><img id="box_0" src="http://wp-master.club/wp-content/uploads/2018/10/loading.gif" class="img-fluid streetview-box-image" data-lightbox="location" style="max-height: 6.4rem;"></div></a>
+                        <a id="a_box_1"><div class="row p-1"><img id="box_1" src="http://wp-master.club/wp-content/uploads/2018/10/loading.gif" class="img-fluid streetview-box-image" data-lightbox="location" style="max-height: 6.4rem;"></div></a>
+                        <a id="a_box_2"><div class="row p-1"><img id="box_2" src="http://wp-master.club/wp-content/uploads/2018/10/loading.gif" class="img-fluid streetview-box-image" data-lightbox="location" style="max-height: 6.4rem;"></div></a>
+                    </div>
+                </div>
+                <div class="col justify-content-end">
+                    <div class="d-flex flex-column">
+                        <div class="text-end fs-md-5 fs-6 line1">lat, lng = -, -</div>
+                        <div class="text-end fs-md-5 fs-6 line2">CO2: -, Vehicles: {}</div>
+                        <!-- <div class="text-end fs-md-5 fs-6 line3">API URL: -</div> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script>
+var map;
+var geocoder = new google.maps.Geocoder();
+var sv = new google.maps.StreetViewService();
+var panorama;
+var isFirstTimeOnLocationChanged = false;
+var requestedLocationList = [];
+
+    
+const initialize = () => {
+    defPos = new google.maps.LatLng(36.322512, 139.01122399999997);
+    
+    //蝨ｰ蝗ｳ蛻晄悄蛹� 
+    var mapOptions = {
+        center: defPos,
+        zoom: 14,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+
+    //繧ｹ繝医Μ繝ｼ繝医ン繝･繝ｼ蛻晄悄蛹�
+    var panoramaOptions = {
+		panControl: false,
+		addressControl: false,
+		linksControl: false,
+		zoomControlOptions: false,		
+        position: defPos,
+        pov: {
+            heading: 88,
+            pitch: 7
+        }
+    };  
+    panorama = new  google.maps.StreetViewPanorama(document.getElementById('pano'),panoramaOptions);
+    map.setStreetView(panorama);
+
+
+    //繧ｹ繝医Μ繝ｼ繝医ン繝･繝ｼ縺ｫeventListener逋ｻ骭ｲ
+    google.maps.event.addListener(panorama, 'position_changed', function () {
+        if (!isFirstTimeOnLocationChanged) {
+            isFirstTimeOnLocationChanged = true;
+            return;
+        }
+		onLocationChanged(panorama);
+    }, {passive: true});
+    // google.maps.event.addListener(panorama, 'pov_changed', () => {
+	// 	output(panorama);
+    // }, {passive: true});
+	let text_form = document.getElementById('address');
+    let submit_button = document.getElementById('submit-address');
+
+    
+    const search_event = (e) => {
+        if (e.keyCode === 13) {
+            submit_button.click();
+        }  
+        return false;
+    }
+	
+    text_form.addEventListener('keypress', search_event);
+}
+
+const onLocationChanged = async (panorama) => {
+    if (isRequestedEver(panorama)) {
+        return;
+    }
+    let recordEle = createRecordElement(panorama);
+    output(panorama);
+    let json = await calculateCO2(panorama);
+    displayImages(recordEle, json);
+    setDetails(recordEle, json);
+}
+
+const isRequestedEver = (panorama) => {
+    let location = panorama.getPosition();
+    for (let i = 0; i < requestedLocationList.length; i++) {
+        if (requestedLocationList[i].lat() == location.lat() && requestedLocationList[i].lng() == location.lng()) {
+            return true;
+        }
+    }
+    requestedLocationList.push(location);
+    return false;
+}
+
+
+const calculateCO2 = async (panorama) => {
+    let location = panorama.getPosition();
+    let json = fetch("/api/measure_point?lat=" + location.lat() + "&lon=" + location.lng()).then(res => res.json());
+    console.log("fetching measure point");
+    console.log(json);
+    return await json;
+}
+
+const createRecordElement = (panorama) => {
+    let recordList = document.getElementById("request-record-list");
+    let baseRecord = document.getElementById("request-record-base");
+
+    // console.log(baseRecord);
+    let location = panorama.getPosition();
+    let record = baseRecord.cloneNode(true);
+    record.removeAttribute("id");
+    record.style.display = "block";
+
+    let line1Ele = record.querySelector(".line1");
+    line1Ele.innerText = "lat, lon: " + location.lat() + ", " + location.lng();
+    
+    recordList.appendChild(record);
+    return record;
+}
+
+const displayImages = (recordEle, json) => {
+    console.log(json);
+    let images = json.images_paths.boxed;
+
+    // recordEleの中のimgタグのsrcをimagesに変更
+    for (let i = 0; i < images.length; i++) {
+        let img = recordEle.querySelector("#box_" + i);
+        img.src = images[i];
+        let a = recordEle.querySelector("#a_box_" + i);
+        a.href = images[i];
+        a.setAttribute("data-lightbox", "location");
+    }
+}
+
+const setDetails = (recordEle, json) => {
+    let co2 = json.CO2;
+    let api_url = "none";
+    let latlonEle = recordEle.querySelector(".line1");
+    let co2Ele = recordEle.querySelector(".line2");
+    // let apiEle = recordEle.querySelector(".line3");
+    // latlonEle.innerText = "lat, lon: " + lat + ", " + lon;
+    co2Ele.innerText = "CO2: " + co2 + ", vehicles: " + JSON.stringify(json.vehicle_count);
+    // apiEle.innerText = "API URL: " + api_url;
+}
+
+const output = (panorama) => {
+	var location = panorama.getPosition();
+	var heading = panorama.getPov().heading;
+	var pitch = panorama.getPov().pitch;
+	var zoom = panorama.getPov().zoom;
+	
+	var locationCell = document.getElementById('location_cell');
+   
+	locationCell.firstChild.nodeValue = location;
+	
+	var stvImageURL = document.getElementById('stvImageURL');
+	stvImageURL.value = "https://maps.googleapis.com/maps/api/streetview?size=400x400"+
+	"&location="+ location.toUrlValue() +
+	"&heading="+ heading +
+	"&pitch="+ pitch +
+	"&fov=120" +
+	"&zoom=" + zoom;
+}
+
+//検索
+const addressSearch = async () => {    
+    var address = document.getElementById('address').value;    
+    geocoder.geocode({ 'address': address}, function(results, status){
+        if(status == google.maps.GeocoderStatus.OK) {
+            map.setCenter(results[0].geometry.location); //地図を移動
+            
+            sv.getPanoramaByLocation(    //指定された緯度経度にストリートビューが存在するかチェック
+                results[0].geometry.location,
+                500, //検索半径(m)
+                function(svData,svStatus){
+                    if(svStatus == google.maps.StreetViewStatus.OK){
+                        panorama.setPosition(svData.location.latLng);    //ストリートビューを移動
+                    }else{
+                        alert("out of streetiew area")
+                    };
+                }
+            );
+        } else {
+            alert('fail to get location: ' + status);
+        }
+    });
+} 
+</script>

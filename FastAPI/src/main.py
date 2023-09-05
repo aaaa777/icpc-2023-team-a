@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from .exception.streetview import \
     StreetViewPointNotFound, \
@@ -14,6 +15,7 @@ from .vehicle_counting import VehicleCounting
 from .streetview.streetview import GoogleStreetView
 
 from pydantic import BaseModel
+from os.path import join, basename, dirname
 
 # /api/measure_area
 class area_req(BaseModel) :
@@ -24,6 +26,13 @@ app = FastAPI()
 GSV = GoogleStreetView()
 VC = VehicleCounting(None)
 CC = CO2Counter()
+
+# download images
+app.mount("/downloads", StaticFiles(directory="downloads"), name="static")
+
+# html file
+app.mount("/html", StaticFiles(directory="html", html=True), name="html")
+
 
 @app.get('/')
 def read_root():
@@ -77,13 +86,19 @@ async def get_streetview_image_path(lat: float, lon: float):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail="Unknown error: {}".format(e))
+    
+    json_boxed_images_paths = ["/" + join(dirname(image_path), "boxed_" + basename(image_path)) for image_path in images_paths]
+    json_images_paths = ["/" + image_path for image_path in images_paths]
 
     return {
         "status": "OK",
         "CO2": co2_amount,
         "unit": "ppm",
         "vehicle_count": result,
-        "image_path": images_dir,
+        "images_paths": {
+            "original": json_images_paths,
+            "boxed": json_boxed_images_paths,
+        },
     }
 
 

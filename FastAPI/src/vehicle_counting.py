@@ -1,6 +1,6 @@
 import cv2
 import glob
-from os.path import join
+from os.path import join, basename
 from .vehicle_detector import VehicleDetector
 
 class VehicleCounting:
@@ -38,20 +38,15 @@ class VehicleCounting:
 
             vehicle_boxes,vehicle_count = self.vd.detect_vehicles(img).values()
             
+            print(vehicle_boxes)
+            box_img = self.draw_box_list(img, vehicle_boxes, vehicle_count)
+
+            # save image
+            cv2.imwrite(join(self.folder_path, "boxed_" + basename(img_path)), box_img)
+
             total = len(vehicle_boxes)
             # Update total count
             vehicles_folder_count += total
-
-            # draw box and show the images
-            # for box in vehicle_boxes:
-            #     x, y, w, h = box
-
-            #     cv2.rectangle(img, (x, y), (x + w, y + h), (25, 0, 180), 3)
-
-            #     cv2.putText(img, "Vehicles: " + str(vehicle_count), (20, 50), 0, 0.7, (100, 200, 0), 3)
-
-            # cv2.imshow("Cars", img)
-            # cv2.waitKey(1)
             
             vehicle_count_list.append(vehicle_count)
         
@@ -60,3 +55,15 @@ class VehicleCounting:
                 total_vehicle_count[key] += Vcount[key]
         
         return total_vehicle_count
+    
+    # draw box and show the images
+    def draw_box_list(self, img, box_list, vehicle_count):
+        for box in box_list:
+            x, y, w, h = box
+            cv2.rectangle(img, (x, y), (x + w, y + h), (25, 0, 180), 3)
+
+            cv2.putText(img, "Vehicles: " + str(vehicle_count), (20, 50), 0, 0.7, (100, 200, 0), 3)
+            
+            # cv2.imshow("Cars", img)
+            # cv2.waitKey(1)
+        return img
