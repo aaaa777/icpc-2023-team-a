@@ -3,8 +3,8 @@ Description = FastAPI service ( gunicorn - fastapi )
 After = network-online.target
 
 [Service]
-WorkingDirectory = /var/www/icpc-a.nomiss.net/FastAPI
-ExecStart = /var/www/icpc-a.nomiss.net/FastAPI/venv/bin/uvicorn src.main:app
+WorkingDirectory = /var/www/icpc-a.nomiss.net
+ExecStart = /var/www/icpc-a.nomiss.net/launch_fastapi.sh
 ExecReload = /bin/kill -s HUP $MAINPID
 ExecStop = /bin/kill -s TERM $MAINPID
 PrivateTmp = true
