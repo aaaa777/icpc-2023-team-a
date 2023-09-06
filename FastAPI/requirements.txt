@@ -3,3 +3,4 @@ uvicorn
 python-dotenv
 google_streetview
 opencv-python
+google-cloud-storage

@@ -30,3 +30,13 @@ Thailand
 13.680551,  100.5747176, Thailand #4
 13.8770652, 100.4838789, Thailand #5
 ```
+
+
+# note
+
+## poetry update
+
+```
+poetry add <package-name>
+poetry export -f requirements.txt > FastAPI/poetry_requirements.txt
+```

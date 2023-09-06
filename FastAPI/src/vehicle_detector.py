@@ -1,8 +1,11 @@
 import cv2
 import numpy as np
-from os.path import join
+from os.path import join, exists
 
 DNN_MODEL_PATH = "FastAPI/dnn_model"
+# if dnn_model not exists, search in current directory
+if(not exists(DNN_MODEL_PATH)):
+    DNN_MODEL_PATH = "dnn_model"
 
 class VehicleDetector:
 

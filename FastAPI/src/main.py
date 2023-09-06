@@ -1,7 +1,13 @@
+from os.path import join, basename, dirname
+import os
+from dotenv import load_dotenv
+
+# fastapi
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 
+# exception
 from .exception.streetview import \
     StreetViewPointNotFound, \
     StreetViewLatitudeOutOfRange, \
@@ -9,26 +15,52 @@ from .exception.streetview import \
     StreetViewUnknownError, \
     StreetViewZeroResults
 
+# co2 calculator
 from .measuring.co2 import CO2Counter
 
+# vehicle counter
 from .vehicle_counting import VehicleCounting
 from .streetview.streetview import GoogleStreetView
 
+# cloud services
+from .cloud.gcp.storage import CloudStorageService
+
 from pydantic import BaseModel
-from os.path import join, basename, dirname
+
+if(os.path.exists('.env')):
+    load_dotenv(verbose=True)
+elif(os.path.exists('FastAPI/.env')):
+    load_dotenv("FastAPI/.env", verbose=True)
 
 # /api/measure_area
 class area_req(BaseModel) :
     points : list
 
-
+# initialize instances
 app = FastAPI()
 GSV = GoogleStreetView()
 VC = VehicleCounting(None)
 CC = CO2Counter()
 
+CSS = CloudStorageService(bucket_name="icpc-a", path_prefix="temp")
+
 # download images
-app.mount("/downloads", StaticFiles(directory="downloads"), name="static")
+if(os.environ.get("S3_PROVIDER") == "GCP"):
+
+    print("GCP Object Storage Setting loaded")
+    @app.get('/downloads/{directory}/{filename}')
+    def download_file(directory: str, filename: str):
+        print("request for downloads/{}/{}".format(directory, filename))
+        file_path = "downloads/{}/{}".format(directory, filename)
+        CSS.download_file(file_path)
+        return FileResponse(
+            file_path
+        )
+else:
+
+    print("Local Object Storage Setting loaded")
+    app.mount("/downloads", StaticFiles(directory="downloads"), name="static")
+
 
 # html file
 app.mount("/html", StaticFiles(directory="html", html=True), name="html")
@@ -38,6 +70,16 @@ app.mount("/html", StaticFiles(directory="html", html=True), name="html")
 def read_root():
     return {"Hello": "World"}
 
+@app.get('/api/test')
+def test():
+    CSS.upload_file("downloads/2023-09-05.17-28-06-265417/boxed_image_0.jpg")
+
+@app.get('/api/test2')
+def test2():
+    CSS.download_file("downloads/2023-09-05.17-28-06-265417/boxed_image_0.jpg")
+    return FileResponse(
+        "downloads/2023-09-05.17-28-06-265417/boxed_image_0.jpg"
+    )
 
 # single point
 @app.get('/api/measure_point')
@@ -89,6 +131,8 @@ async def get_streetview_image_path(lat: float, lon: float):
     
     json_boxed_images_paths = ["/" + join(dirname(image_path), "boxed_" + basename(image_path)) for image_path in images_paths]
     json_images_paths = ["/" + image_path for image_path in images_paths]
+
+    CSS.upload_dir(images_dir)
 
     return {
         "status": "OK",
@@ -148,3 +192,8 @@ async def handler_multiple_point(area : area_req):
         "status":"OK",
         "point_res": point_res
     }
+
+
+# serverless entry point
+def get_app():
+    return app
