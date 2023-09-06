@@ -1,5 +1,6 @@
 from os.path import join, basename, dirname
 import os
+import time
 from dotenv import load_dotenv
 
 # fastapi
@@ -132,7 +133,13 @@ async def get_streetview_image_path(lat: float, lon: float):
     json_boxed_images_paths = ["/" + join(dirname(image_path), "boxed_" + basename(image_path)) for image_path in images_paths]
     json_images_paths = ["/" + image_path for image_path in images_paths]
 
+    if(os.environ.get("S3_PROVIDER") == "GCP"):
+        s3_endpoint = "https://storage.googleapis.com/icpc-a/temp"
+        json_boxed_images_paths = [s3_endpoint + image_path for image_path in json_boxed_images_paths]
+        json_images_paths = [s3_endpoint + image_path for image_path in json_images_paths]
+
     CSS.upload_dir(images_dir)
+    time.sleep(1)
 
     return {
         "status": "OK",
