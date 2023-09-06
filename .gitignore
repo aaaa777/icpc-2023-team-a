@@ -4,3 +4,5 @@ downloads
 __pycache__
 dnn_model
 credentials.json
+*.zip
+node_modules
